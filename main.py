@@ -1,177 +1,114 @@
 import string
 import sys
 import time
-import random
 
-ALPHABET = string.ascii_uppercase
-
-
-def offset(char, offset):
-    return ALPHABET[(ALPHABET.index(char) + offset) % 26]
+# Global variable = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+uppercase_alphabet = string.ascii_uppercase
 
 
-class Vigenere:
+# Global function
+def offset(char, relative_address):
+    return uppercase_alphabet[(uppercase_alphabet.index(char) + relative_address) % 26]
+
+
+# VigenereCipher class contains four staticmethod instances
+# encrypt single-precision floating-point number (f4) data type, is the parent of the lambda function
+# it maps the letters of the key to there respective values eg A = 0, B = 1, C = 2, ..., Y = 24, Z = 25
+# it then maps the letters of the message to the relative_address of the key to the uppercase_alphabet
+# example: plain_text = "BRICE" key = "HEY" which will be extended to "HEYHE" to match the length of message
+#           H maps to 7 because its the 8th letter of the alphabet and we start at zero here.
+#           H = index 7, E = index 4, Y = index 24, H = index 7, E = index 4
+#           then it takes the index of the current letter from plain_text and sums it with its relative_address
+#           and modulo it by 26
+#           so for key = HEYHE and plain_text = BRICE
+#           We have B index at 2 + the relative_index of H at 7   2 + 7 = 9
+#           Then modulo 26 still equals 9. So, the cipher for B is I
+#           R = index 18 + relative index of E at 4.  18 + 4 = 22 mod 26 = 22. So, the cipher for R is V
+#           I = 9; Y = 24; 9 + 24 = 33; 33%26 = 7. So, the cipher for I is G the seventh letter of the alphabet.
+#           C = 3; H = 7; 3 + 7 = 10; 10%26 = 10. So, the cipher for C is J the tenth letter of the alphabet.
+#           E = 5; E = 4; 5 + 4 + 9; 9%26 = 9. So, the cipher for E is I the 9th letter of the alphabet.
+#           plain_text = "BRICE", key = "heyhe", encrypted = "IVGJI"
+
+# decrypt same as encrypt but backwards
+# display_menu handles user i/o
+# get_message_and_key returns tuple containing
+# index 0 = plain_text which has been capitalized
+# index 1 = key which has been capitalized and either truncated or extended to match length of message
+class VigenereCipher:
     @staticmethod
-    def encrypt(message, key):
-        return ''.join(
-            map(offset, message, list(map(lambda x: ALPHABET.index(x), key)) * (len(message) // len(key) + 1)))
+    def encrypt(plain_text, key):
+        return ''.join(map(offset, plain_text,
+                           list(map(lambda x: uppercase_alphabet.index(x), key))))
 
     @staticmethod
-    def decrypt(ciphertext, key):
-        return ''.join(map(offset, ciphertext,
-                           list(map(lambda x: 26 - ALPHABET.index(x), key)) * (len(ciphertext) // len(key) + 1)))
+    def decrypt(encrypted_text, key):
+        return ''.join(map(offset, encrypted_text,
+                           list(map(lambda x: 26 - uppercase_alphabet.index(x), key))))
 
-
-"""
-Encryption function
-1. Takes user input for the message in the form of a string
-    stores the whole thing as an uppercase string with spaces removed
-2. Takes user input for key in the form of a string
-    stores the whole thing as an uppercase string with spaces removed
-3. Condition key and user_input
-    a. If user_input is longer than key
-        extend key to match user_input length by duplicating and concatenating
-    b. If user_input is shorter than key
-        truncate key to match length
-    c. else something went wrong display error message & exit program with value 1
-        
-    
-"""
-
-
-def encryption():
-    user_input = str(input("\nPlease enter the user_input you want to encrypt: "))
-    user_input = user_input.replace(' ', '').upper()
-    key_original = str(input("\nPlease enter the keyword: "))
-    key_original = key_original.replace(' ', '').upper()
-    key = ''
-    encryption = ''
-
-    if len(user_input) > len(key_original):
-        for i in range(int(len(user_input) / len(key_original))):
-            key += key_original
-        key += key_original[:len(user_input) % len(key_original)]
-
-    elif len(user_input) < len(key_original):
-        key = key_original[:len(user_input)]
-
-    elif len(user_input) == len(key_original):
-        key = key_original
-
-    else:
-        print('\nHello IT, have you tried turning it off and on again?')
-        sys.exit(1)
-
-    print('\nOriginal user_input: ' + user_input)
-    print('\nKeyword: ' + key_original)
-    time.sleep(1)  # sleep function to make it look like the program is taking a bit
-    print('\nSwapping time and space...')
-    time.sleep(2)  # sleep function to make it look like the program is taking a bit
-    # find() If substring exists inside the string, it returns the index of first occurrence of the substring.
-    # If substring doesn't exist inside the string, it returns -1.
-    for i in range(len(user_input)):
-        x = alphabet.find(user_input[i])  # The character position of the user_input is saved in the alphabet
-        y = alphabet.find(key[i])  # The position of the key character in the alphabet is saved
-        summation = x + y  # The sum of both positions is calculated
-        modulo = summation % len(alphabet)  # The sum module is calculated with respect to the length of the alphabet
-        encryption += alphabet[modulo]  # The encrypted character is concatenated with 'encryption'
-
-    print('Message Encrypted: ' + encryption)
-    print()
-
-
-def decryption():
-    alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-    message = str(input("\nPlease enter the message you want to decrypt: "))
-    message = message.replace(' ', '').upper()  # The message is saved in uppercase and without spaces #
-    key_original = str(input("\nPlease enter a keyword: "))
-    key_original = key_original.replace(' ', '').upper()  # The key is saved in uppercase and without spaces #
-    key = ''
-    decoded = ''
-    if len(message) > len(key_original):  # If the message length is greater than that of the key ... #
-        for i in range(int(len(message) / len(key_original))):  ## The key is extended, duplicating it and ##
-            key += key_original  ## concatenate ##
-        key += key_original[:len(message) % len(key_original)]  ## length is same as message  ##
-
-    elif len(message) < len(key_original):  # If the length of the message is less than that of the key ...
-        key = key_original[:len(message)]  # The key is truncated to have the same length as the message #
-
-    elif len(message) == len(key_original):  # If the message length is the same as the key ... #
-        key = key_original  # The password is saved as it is in 'key_original #
-
-    else:
-        print('\nHello IT, have you tried turning it off and on again?')
-        sys.exit(1)
-
-    print('Original message: ' + message)
-    print('Keyword: ' + key_original)
-    time.sleep(1)  # sleep function to make it look like the program is taking a bit
-    print('\nI swear it\'s almost done...')
-    time.sleep(2)  # sleep function to make it look like the program is taking a bit
-    for i in range(len(message)):
-        x = alphabet.find(message[i])  # The character position of the encrypted message is saved in the alphabet
-        y = alphabet.find(key[i])  # The position of the key character in the alphabet is saved
-        subtraction = x - y  # The subtraction of both positions is calculated
-        modulo = subtraction % len(alphabet)  # The subtraction module is calculated with respect to the length of
-        # the alphabet
-        decoded += alphabet[modulo]  # The decrypted character is concatenated with 'decrypted'
-
-    print('Decrypted message: ' + decoded)
-
-
-
-def userInterface():
-    user_choice = str(input("\nWould you like to: \n1.Encrypt\n2.Decrypt\n3.Exit Program\n> "))
-
-    if user_choice not in ('1', '2', '3'):
-        print('Invalid input.')
-        userInterface()
-
-    if user_choice == '1':
-        message = str(input("\nPlease enter the message you want to decrypt: "))
-        message = message.replace(' ', '').upper()  # The message is saved in uppercase and without spaces #
-        key_original = str(input("\nPlease enter a keyword: "))
-        key_original = key_original.replace(' ', '').upper()  # The key is saved in uppercase and without spaces #
+    @staticmethod
+    def get_message_and_key():
+        plain_text = str(input("\nPlease enter a message: "))
+        plain_text = plain_text.replace(' ', '').upper()  # The message is saved in uppercase sans whitespace
+        original_key = str(input("\nPlease enter a keyword: "))
+        original_key = original_key.replace(' ', '').upper()  # The key is saved in uppercase sans whitespace
         key = ''
-        decoded = ''
-        if len(message) > len(key_original):  # If the message length is greater than that of the key ... #
-            for i in range(int(len(message) / len(key_original))):  ## The key is extended, duplicating it and ##
-                key += key_original  ## concatenate ##
-            key += key_original[:len(message) % len(key_original)]  ## length is same as message  ##
+        if len(plain_text) > len(original_key):  # If the message length is greater than that of the key
+            for i in range(int(len(plain_text) / len(original_key))):
+                key += original_key  # The key is extended, duplicating it and concatenated
+            key += original_key[:len(plain_text) % len(original_key)]  # make length is same as message
 
-        elif len(message) < len(key_original):  # If the length of the message is less than that of the key ...
-            key = key_original[:len(message)]  # The key is truncated to have the same length as the message #
+        elif len(plain_text) < len(original_key):  # If the length of the message is less than that of the key
+            key = original_key[:len(plain_text)]  # The key is truncated to have the same length as the message
 
-        elif len(message) == len(key_original):  # If the message length is the same as the key ... #
-            key = key_original  # The password is saved as it is in 'key_original #
+        elif len(plain_text) == len(original_key):  # If the message length is the same as the key
+            key = original_key  # The key is saved as is in key
 
-        else:
+        else:  # idk something went wrong display error message and exit program with code 1 abnormal exit
             print('\nHello IT, have you tried turning it off and on again?')
             sys.exit(1)
 
-        print('Original message: ' + message)
-        print('Keyword: ' + key_original)
+        print('Original message: ' + plain_text)
+        print('Keyword: ' + original_key)
+        return plain_text, key
 
-        encrypted = Vigenere.encrypt(message, key)
-        print(encrypted)
+    @staticmethod
+    def display_menu():
+        user_choice = str(input("\nWould you like to: \n1.Encrypt\n2.Decrypt\n3.Exit Program\n> "))
 
-    elif user_choice == '2':
-        decryption()
-    elif user_choice == '3':
-        print('Goodbye')
-        sys.exit(0)
+        if user_choice not in ('1', '2', '3'):  # Only take valid input.
+            print('Invalid input.')
+            VigenereCipher.display_menu()
+
+        if user_choice == '1':
+            plain_text, key = VigenereCipher.get_message_and_key()
+            encrypted = VigenereCipher.encrypt(plain_text, key)
+            print("\nSwapping time and space...")
+            time.sleep(2)  # Sleep function to fake slow processing time.
+            print(encrypted)
+
+        elif user_choice == '2':
+            encrypted_text, key = VigenereCipher.get_message_and_key()
+            deciphered = VigenereCipher.decrypt(encrypted_text, key)
+            print("\nI swear it\'s almost done.")
+            time.sleep(2)  # Sleep function to fake slow processing time.
+            print('Decrypted message: ' + deciphered)
+
+        elif user_choice == '3':
+            print('Goodbye')
+            sys.exit(0)
 
 
+# define main method while loop to continue program until user opts to exit
 def main():
     while True:
-        userInterface()
+        VigenereCipher.display_menu()
         while True:
-            answer = str(input('Do you want to run the program again? (y/n): '))
-            if answer in ('y', 'n'):
+            user_input = str(input('Do you want to run the program again? (y/n): '))
+            if user_input in ('y', 'n'):
                 break
             print('Invalid input.')
 
-        if answer == 'y':
+        if user_input == 'y':
             continue
         else:
             print('Goodbye!')
